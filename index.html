@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>d-AI-s - EAFIT University</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0047AB;
+            --cyan: #00C7B7;
+            --purple: #7B2CBF;
+            --light-bg: #F5F7FA;
+            --dark: #1E1E1E;
+            --neon-cyan: #00FFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        #p5-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(90deg, #0047AB 0%, #7B2CBF 100%);
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin: 0 15px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--neon-cyan);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        .nav-link:hover {
+            color: var(--neon-cyan) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(90deg, #0047AB 0%, #7B2CBF 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #00C7B7 0%, #00FFFF 100%);
+            color: var(--dark);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 199, 183, 0.4);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 199, 183, 0.6);
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: rgba(245, 247, 250, 0.95);
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, #0047AB 0%, #7B2CBF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Schedule Table */
+        .schedule-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .schedule-table thead {
+            background: linear-gradient(90deg, #0047AB 0%, #7B2CBF 100%);
+            color: white;
+        }
+
+        .schedule-table th {
+            padding: 20px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .schedule-table td {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .schedule-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .schedule-table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(0, 199, 183, 0.1) 0%, rgba(0, 255, 255, 0.1) 100%);
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .speaker-name {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .session-title {
+            font-weight: bold;
+            color: var(--purple);
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .qr-code {
+            max-width: 300px;
+            border: 5px solid var(--cyan);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 199, 183, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(90deg, #1E1E1E 0%, #0047AB 100%);
+            color: white;
+            padding: 60px 0 30px;
+            text-align: center;
+        }
+
+        .footer-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-logo {
+            max-width: 150px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-logo:hover {
+            transform: scale(1.1);
+        }
+
+        .lang-switcher {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .lang-switcher:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--neon-cyan);
+        }
+
+        /* Challenge Badge */
+        .challenge-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: var(--dark);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .schedule-table {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- P5.js Canvas -->
+    <div id="p5-canvas"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home">d-AI-s Days</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#schedule">Schedule</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#registration">Registration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/spanish">Español</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1 data-en="d-AI-s Days 2025" data-es="d-AI-s Days 2025">d-AI-s Days 2025</h1>
+            <h3 data-en="29 of November" data-es="29 de Noviembre">29 of November of 2025</h3>
+            <p data-en="Real Artificial Intelligence at EAFIT University" data-es="Inteligencia Artificial Real en la Universidad EAFIT">Real Artificial Intelligence at EAFIT University</p>
+            <p data-en="Medellín, Colombia | 70-90 Attendees Expected" data-es="Medellín, Colombia | 70-90 Asistentes Esperados">Medellín, Colombia | 70-90 Attendees Expected</p>
+            <a href="#registration" class="btn btn-register" data-en="Register Now" data-es="Regístrate Ahora">Register Now</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="content-section" id="about">
+        <div class="container">
+            <h2 class="section-title text-center" data-en="About d-AI-s Days" data-es="Sobre d-AI-s Days">About d-AI-s Days</h2>
+            <div class="about-content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>🧠 <span data-en="Real Artificial Intelligence at EAFIT University" data-es="Inteligencia Artificial Real en la Universidad EAFIT">Real Artificial Intelligence at EAFIT University</span></h3>
+                        <p data-en="Welcome to d-AI-s Days, an event dedicated to real artificial intelligence — created by and for passionate and competitive innovators. Hosted at EAFIT University, this is our first edition, and we're setting our sights high: to become the premier AI and programming event in Colombia, surpassing even PyCon Colombia as a national reference for technology and innovation." 
+                           data-es="Bienvenido a d-AI-s Days, un evento dedicado a la inteligencia artificial real — creado por y para innovadores apasionados y competitivos. Organizado en la Universidad EAFIT, esta es nuestra primera edición, y tenemos grandes expectativas: convertirnos en el evento premier de IA y programación en Colombia, superando incluso a PyCon Colombia como referencia nacional de tecnología e innovación.">
+                           Welcome to <strong>d-AI-s Days</strong>, an event dedicated to <strong>real artificial intelligence</strong> — created by and for passionate and competitive innovators. Hosted at <strong>EAFIT University</strong>, this is our <strong>first edition</strong>, and we're setting our sights high: to become <strong>the premier AI and programming event in Colombia</strong>, surpassing even <strong>PyCon Colombia</strong> as a national reference for technology and innovation.
+                        </p>
+
+                        <h4>🌟 <span data-en="Our Vision" data-es="Nuestra Visión">Our Vision</span></h4>
+                        <p data-en="We are building something that grows one day at a time — literally. Each year, we plan to add one more day to the event, reaching a total of six days of world-class content, learning, and networking."
+                           data-es="Estamos construyendo algo que crece un día a la vez — literalmente. Cada año, planeamos agregar un día más al evento, alcanzando un total de seis días de contenido, aprendizaje y networking de clase mundial.">
+                           We are building something that grows <strong>one day at a time</strong> — literally. Each year, we plan to <strong>add one more day</strong> to the event, reaching a total of <strong>six days</strong> of world-class content, learning, and networking.
+                        </p>
+
+                        <h4>📈 <span data-en="2025 Edition" data-es="Edición 2025">2025 Edition</span></h4>
+                        <ul>
+                            <li data-en="Expected attendees: 70–90 participants" data-es="Asistentes esperados: 70–90 participantes"><strong data-en="Expected attendees:" data-es="Asistentes esperados:">Expected attendees:</strong> 70–90 participants</li>
+                            <li data-en="Location: EAFIT University, Medellín, Colombia" data-es="Ubicación: Universidad EAFIT, Medellín, Colombia"><strong data-en="Location:" data-es="Ubicación:">Location:</strong> EAFIT University, Medellín, Colombia</li>
+                            <li data-en="Focus: Real-world applications of Artificial Intelligence" data-es="Enfoque: Aplicaciones del mundo real de Inteligencia Artificial"><strong data-en="Focus:" data-es="Enfoque:">Focus:</strong> Real-world applications of Artificial Intelligence</li>
+                            <li data-en="Organizers: Machine Learning EAFIT & Medellín AI" data-es="Organizadores: Machine Learning EAFIT & Medellín AI"><strong data-en="Organizers:" data-es="Organizadores:">Organizers:</strong> Machine Learning EAFIT & Medellín AI</li>
+                        </ul>
+
+                        <h4>🌍 <span data-en="Future Plans" data-es="Planes Futuros">Future Plans</span></h4>
+                        <p data-en="In the coming years, we aim to:" data-es="En los próximos años, buscamos:">In the coming years, we aim to:</p>
+                        <ul>
+                            <li data-en="Expand to two auditoriums" data-es="Expandir a dos auditorios">Expand to <strong>two auditoriums</strong></li>
+                            <li data-en="Attract national and international speakers" data-es="Atraer ponentes nacionales e internacionales">Attract <strong>national and international speakers</strong></li>
+                            <li data-en="Secure sponsorships" data-es="Asegurar patrocinios">Secure <strong>sponsorships</strong></li>
+                            <li data-en="Include panel discussions and open debates" data-es="Incluir paneles de discusión y debates abiertos">Include <strong>panel discussions</strong> and open debates</li>
+                        </ul>
+
+                        <h4>🎤 <span data-en="Open to the Public" data-es="Abierto al Público">Open to the Public</span></h4>
+                        <p data-en="This event is open to everyone. You can even become a speaker next year — all you need is to attend the training sessions provided by our event trainees."
+                           data-es="Este evento está abierto a todos. Incluso puedes convertirte en ponente el próximo año — todo lo que necesitas es asistir a las sesiones de entrenamiento proporcionadas por nuestros capacitadores del evento.">
+                           This event is open to <strong>everyone</strong>. You can even become a <strong>speaker</strong> next year — all you need is to <strong>attend the training sessions</strong> provided by our <strong>event trainees</strong>.
+                        </p>
+
+                        <div class="challenge-badge">
+                            <h4>🏆 <span data-en="Speaker Challenge" data-es="Desafío de Ponentes">Speaker Challenge</span></h4>
+                            <p data-en="During the event, speakers will compete to deliver the best talk of the conference. The first, second, and third place winners will receive special recognition for their outstanding presentations. This friendly competition encourages creativity, clarity, and passion in every talk."
+                               data-es="Durante el evento, los ponentes competirán para entregar la mejor charla de la conferencia. Los ganadores del primer, segundo y tercer lugar recibirán reconocimiento especial por sus presentaciones sobresalientes. Esta competencia amistosa fomenta la creatividad, claridad y pasión en cada charla.">
+                               During the event, <strong>speakers will compete</strong> to deliver the <strong>best talk</strong> of the conference. The <strong>first</strong>, <strong>second</strong>, and <strong>third</strong> place winners will <strong>receive special recognition</strong> for their outstanding presentations. This friendly competition encourages creativity, clarity, and passion in every talk.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Section -->
+    <section class="content-section" id="schedule">
+        <div class="container">
+            <h2 class="section-title text-center" data-en="Conference Schedule" data-es="Agenda de la Conferencia">Conference Schedule</h2>
+            <div class="schedule-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-en="Time Slot" data-es="Horario">Time Slot</th>
+                            <th data-en="Speaker" data-es="Ponente">Speaker</th>
+                            <th data-en="Title" data-es="Título">Title</th>
+                            <th data-en="Description" data-es="Descripción">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8:00 - 8:30</td>
+                            <td></td>
+                            <td class="session-title" data-en="Opening" data-es="Apertura">Register the attends</td>
+                            <td data-en="Opening session for the event." data-es="Sesión de apertura del evento.">Register the attends for the event.</td>
+                        </tr>
+                        <tr>
+                            <td>8:30 - 8:45</td>
+                            <td></td>
+                            <td class="session-title" data-en="Opening" data-es="Apertura">Opening</td>
+                            <td data-en="Opening session for the event." data-es="Sesión de apertura del evento.">Opening session for the event.</td>
+                        </tr>
+                        <tr>
+                            <td>9:00 - 9:45</td>
+                            <td class="speaker-name">Juan David Martinez</td>
+                            <td class="session-title" data-en="Topic: Large Language Models (LLMs)" data-es="Tema: Modelos de Lenguaje Grandes (LLMs)">Topic: Large Language Models (LLMs)</td>
+                            <td data-en="This talk will delve into the world of Large Language Models (LLMs)." data-es="Esta charla profundizará en el mundo de los Modelos de Lenguaje Grandes (LLMs).">This talk will delve into the world of Large Language Models (LLMs).</td>
+                        </tr>
+                        <tr>
+                            <td>9:45 - 10:30</td>
+                            <td class="speaker-name">Manuela Larrea</td>
+                            <td class="session-title" data-en="Pixels, Priors & Paranoia: From Adversarial Competition to Collaborative ML" data-es="Píxeles, Priors y Paranoia: De la Competencia Adversarial al ML Colaborativo">Pixels, Priors & Paranoia: From Adversarial Competition to Collaborative ML</td>
+                            <td data-en="The talk will explain the functioning of Google's AlphaFold models, their evolution, and their relevance. Introduction: Generator vs. Discriminator metaphor, opening with adversarial training and the idea of learning by competing." data-es="La charla explicará el funcionamiento de los modelos AlphaFold de Google, su evolución y su relevancia. Introducción: metáfora Generador vs. Discriminador, abriendo con entrenamiento adversarial y la idea de aprender compitiendo.">The talk will explain GANs, their evolution, and how CV is integrating with LLMs through Diffusion Models and Transformers.</td>
+                        </tr>
+                        <tr>
+                            <td>10:30 - 11:00</td>
+                            <td></td>
+                            <td class="session-title" data-en="Break" data-es="Descanso">Break</td>
+                            <td data-en="Morning break." data-es="Descanso matutino.">Morning break.</td>
+                        </tr>
+                        <tr>
+                            <td>11:00 - 11:45</td>
+                            <td class="speaker-name">Lucas Barbier</td>
+                            <td class="session-title" data-en="Orchestrating Complex Development Processes with AI Agents" data-es="Orquestando Procesos de Desarrollo Complejos con Agentes IA">Orchestrating Complex Development Processes with AI Agents</td>
+                            <td data-en="Learn how to orchestrate complex development processes using spec-driven development with Claude Code Opus 4.1, Vibe Kanban, and intelligent agent orchestration." data-es="Aprende a orquestar procesos de desarrollo complejos usando desarrollo basado en especificaciones con Claude Code Opus 4.1, Vibe Kanban y orquestación inteligente de agentes.">we’re going to dive deep into how to orchestrate complex development processes using spec-driven development with the help of Claude Code Opus 4.1.
+
+We’ll show how to design new features and roadmaps that truly align with what a project needs, incorporating methodologies like Vibe Kanban to intelligently distribute tasks among the mini-orchestrators — Claude’s sub-agents — and build a complete workflow without losing control of the context window.
+
+We’ll also discuss the initial setup, which starts with defining Changlof Rules and configuring Claude Files — the key components that help agents understand documentation, requirements, and the overall work plan. From there, agents can fully leverage tools and MCPs, improving testing and maintaining the entire project flow.
+
+Finally, we’ll talk about the importance of creating worktrees and templates to industrialize the development process. We’ll explain how this approach produces much more deterministic responses, thanks to prompt engineering tuning by agents, turning weak prompts into clear, powerful, and useful instructions, ensuring consistent and easy-to-review results.</td>
+                        </tr>
+                        <tr>
+                            <td>11:45 - 12:30</td>
+                            <td class="speaker-name">Jorge Ivan Padilla</td>
+                            <td class="session-title" data-en="Topic: To be announced" data-es="Tema: Por anunciar">Topic: To be announced</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>12:30 - 14:00</td>
+                            <td></td>
+                            <td class="session-title" data-en="Lunch" data-es="Almuerzo">Lunch</td>
+                            <td data-en="Lunch break." data-es="Descanso para almuerzo.">Lunch break.</td>
+                        </tr>
+                        <tr>
+                            <td>14:00 - 14:45</td>
+                            <td class="speaker-name">Santiago Cartagena</td>
+                            <td class="session-title" data-en="Organizing ML Pipelines" data-es="Organizando Pipelines de ML">Reinforcement Learning in Action: How MercadoLibre Optimizes Its Advertising with Multi-Armed Bandits</td>
+                            <td data-en="This talk will focus on strategies and best practices for organizing and managing machine learning pipelines effectively." data-es="Esta charla se enfocará en estrategias y mejores prácticas para organizar y gestionar pipelines de aprendizaje automático de manera efectiva.">We’ll explore how MercadoLibre uses Reinforcement Learning techniques to optimize the daily selection of advertising creatives.
+Through strategies such as Thompson Sampling and epsilon-greedy, the goal is to balance exploration of new ads with the exploitation of the most effective ones, maximizing the CTR (Click-Through Rate) on the website’s banners.
+
+We’ll discuss the practical challenges of implementing multi-armed bandits at scale, from defining the environment to offline and online evaluation, and how this technology drives personalization in the user experience.</td>
+                        </tr>
+                        <tr>
+                            <td>14:45 - 15:30</td>
+                            <td class="speaker-name">Santiago Lopez</td>
+                            <td class="session-title" data-en="AlphaFold: Using AI to Find Cures for Diseases" data-es="AlphaFold: Usando IA para Encontrar Curas para Enfermedades">AlphaFold: Using AI to Find Cures for Diseases</td>
+                            <td data-en="The talk will explain the functioning of Google's AlphaFold models, their evolution, and their relevance." data-es="La charla explicará el funcionamiento de los modelos AlphaFold de Google, su evolución y su relevancia.">The talk will explain the functioning of Google's AlphaFold models, their evolution, and their relevance.</td>
+                        </tr>
+                        <tr>
+                            <td>15:30 - 16:00</td>
+                            <td></td>
+                            <td class="session-title" data-en="Break" data-es="Descanso">Break</td>
+                            <td data-en="Afternoon break." data-es="Descanso vespertino.">Afternoon break.</td>
+                        </tr>
+                        <tr>
+                            <td>16:00 - 16:45</td>
+                            <td class="speaker-name">Cesar Gonzales (Special Guest)</td>
+                            <td class="session-title" data-en="Get Your Ducks in a Row, Then Hit: World Models to Define a Strategy" data-es="Organiza Tus Ideas, Luego Actúa: Modelos del Mundo para Definir una Estrategia">Get Your Ducks in a Row, Then Hit: World Models to Define a Strategy</td>
+                            <td data-en="Learn how World Models help AI understand its environment, practice, predict, and act more assertively and safely to define better strategies." data-es="Aprende cómo los Modelos del Mundo ayudan a la IA a entender su entorno, practicar, predecir y actuar de manera más asertiva y segura para definir mejores estrategias.">In the real world, there aren't many opportunities to make mistakes. Failing can cost an opportunity, not yield the expected result, or come at a high price.
+ 
+Humans have developed a process to be more effective: We understand the situation and its environment, focus on what's relevant, imagine, practice, and experiment to finally act with the available information. And if we still fail, we learn why and make corrections for the next time.
+ 
+World Models is an AI tool capable of building an understanding of its world to practice, predict, and act in a much more assertive and safer manner, define an strategy (Get your ducks in a row), and then move (hit).</td>
+                        </tr>
+                        <tr>
+                            <td>16:45 - 17:00</td>
+                            <td></td>
+                            <td class="session-title" data-en="Closing" data-es="Cierre">Closing</td>
+                            <td data-en="Closing session for the event." data-es="Sesión de cierre del evento.">Closing session for the event.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration Section -->
+    <section class="content-section" id="registration">
+        <div class="container">
+            <h2 class="section-title text-center" data-en="Registration" data-es="Registro">Registration</h2>
+            <div class="qr-section">
+                <p data-en="Scan the QR code or click the button below to register:" data-es="Escanea el código QR o haz clic en el botón a continuación para registrarte:">Scan the QR code or click the button below to register:</p>
+                <img src="img/qr.jpg" alt="Registration QR Code" class="qr-code">
+                <br><br>
+                <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=XrX3mb6ce0aBQ5GXgpGK-7zLm7tv6FZOroBbZed2M4hUMjZUNTBZU09HQjdUQ0FUWlpaN1NJQ0xHTC4u" 
+                   target="_blank" class="btn btn-register" data-en="Register Online" data-es="Registrarse en Línea">Register Online</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <h3 data-en="All of this is possible thanks to:" data-es="Todo esto es posible gracias a:">All of this is possible thanks to:</h3>
+            <div class="footer-logos">
+                <img src="img/medellin-ai-logo.png" alt="Medellín AI Logo" class="footer-logo">
+                <img src="img/mleafit-logo.png" alt="Machine Learning EAFIT Logo" class="footer-logo">
+            </div>
+            <p>&copy; 2025 d-AI-s. <span data-en="All rights reserved." data-es="Todos los derechos reservados.">All rights reserved.</span></p>
+        </div>
+    </footer>
+
+ 
+</body>
+</html>
